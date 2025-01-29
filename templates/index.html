@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Recognition Chatbot</title>
+    <script>
+        function sendMessage() {
+            var userMessage = document.getElementById("userMessage").value;
+            document.getElementById("chatbox").innerHTML += "<b>You:</b> " + userMessage + "<br>";
+
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMessage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("chatbox").innerHTML += "<b>Bot:</b> " + data.response + "<br>";
+                document.getElementById("userMessage").value = "";
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Upload an Image for Recognition</h1>
+    <form action="/" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
+    
+    {% if filename %}
+        <h2>Uploaded Image:</h2>
+        <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image" width="400">
+        
+        <h2>Generated Caption:</h2>
+        <p>{{ caption }}</p>
+    {% endif %}
+
+    <hr>
+    
+    <h2>Chat with the Bot</h2>
+    <div id="chatbox" style="border:1px solid black; width:400px; height:200px; overflow:auto; padding:10px;"></div>
+    <br>
+    <input type="text" id="userMessage" placeholder="Ask something about the image">
+    <button onclick="sendMessage()">Send</button>
+
+</body>
+</html>
