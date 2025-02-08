@@ -4,6 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Recognition Chatbot</title>
+    <style>
+        body {
+            background-color: #1e1e2e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #bb86fc;
+        }
+
+        form, .chat-container {
+            background: #2c2c3a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            display: inline-block;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        input[type="file"], input[type="text"], button {
+            background: #3a3a4a;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+        }
+
+        button {
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #bb86fc;
+        }
+
+        #chatbox {
+            height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            padding: 10px;
+            background: #1e1e2e;
+            border-radius: 5px;
+            border: 1px solid #444;
+        }
+
+        #chatbox b {
+            color: #bb86fc;
+        }
+
+        img {
+            margin-top: 10px;
+            border-radius: 5px;
+            max-width: 100%;
+        }
+    </style>
     <script>
         function sendMessage() {
             var userMessage = document.getElementById("userMessage").value;
@@ -20,30 +82,41 @@
                 document.getElementById("userMessage").value = "";
             });
         }
+
+        function startLiveFeed() {
+            fetch("/live", { method: "GET" })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        }
     </script>
 </head>
 <body>
-    <h1>Upload an Image for Recognition</h1>
-    <form action="/" method="post" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <input type="submit" value="Upload">
-    </form>
-    
-    {% if filename %}
-        <h2>Uploaded Image:</h2>
-        <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image" width="400">
-        
-        <h2>Generated Caption:</h2>
-        <p>{{ caption }}</p>
-    {% endif %}
+    <h1>Image Recognition Chatbot</h1>
 
-    <hr>
-    
-    <h2>Chat with the Bot</h2>
-    <div id="chatbox" style="border:1px solid black; width:400px; height:200px; overflow:auto; padding:10px;"></div>
-    <br>
-    <input type="text" id="userMessage" placeholder="Ask something about the image">
-    <button onclick="sendMessage()">Send</button>
+    <div class="chat-container">
+        <h2>Upload an Image</h2>
+        <form action="/" method="post" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <input type="submit" value="Upload">
+        </form>
 
+        {% if filename %}
+            <h2>Uploaded Image:</h2>
+            <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+        {% endif %}
+
+        <button onclick="startLiveFeed()">Start Live Feed</button>
+    </div>
+
+    <br><br>
+
+    <div class="chat-container">
+        <h2>Chat with the Bot</h2>
+        <div id="chatbox"></div>
+        <input type="text" id="userMessage" placeholder="Ask something about the image or live feed">
+        <button onclick="sendMessage()">Send</button>
+    </div>
 </body>
 </html>

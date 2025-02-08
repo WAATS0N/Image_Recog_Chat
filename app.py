@@ -1,11 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 import os
+import cv2
 from werkzeug.utils import secure_filename
 from image_caption import preprocess_image, generate_caption
 from chatbot import chat_with_bot
 
 app = Flask(__name__)
-
 UPLOAD_FOLDER = 'static/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -37,7 +37,7 @@ def index():
             image_base64 = preprocess_image(file_path)
             image_caption = generate_caption(image_base64)
 
-            return render_template('index.html', filename=filename, caption=image_caption)
+            return render_template('index.html', filename=filename)
 
     return render_template('index.html')
 
@@ -48,6 +48,24 @@ def chat():
     user_message = request.json.get("message", "")
     bot_response = chat_with_bot(user_message, image_caption)
     return jsonify({"response": bot_response})
+
+# Video Streaming Setup
+def generate_frames():
+    cap = cv2.VideoCapture(0)
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    cap.release()
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
