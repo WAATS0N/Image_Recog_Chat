@@ -4,6 +4,7 @@
 
 1. **Install Ollama**:
    - Follow the instructions on the official Ollama website to install Ollama on your system.
+   - And download the llava model with parameters that your system can withold.
 
 2. **Install Required Python Packages**:
    - Ensure you have Python installed on your system.

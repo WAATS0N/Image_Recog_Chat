@@ -23,4 +23,3 @@ def chat_with_bot(user_message, image_caption="", history=[]):
         return "Error in chatbot response."
 
 
-# doubts
