@@ -96,15 +96,22 @@
     <h1>Image Recognition Chatbot</h1>
 
     <div class="chat-container">
-        <h2>Upload an Image</h2>
+        <h2>Upload an Image or Video</h2>
         <form action="/" method="post" enctype="multipart/form-data">
             <input type="file" name="file">
             <input type="submit" value="Upload">
         </form>
 
         {% if filename %}
-            <h2>Uploaded Image:</h2>
-            <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+            <h2>Uploaded File:</h2>
+            {% if filename.split('.')[-1] in ['png', 'jpg', 'jpeg', 'gif'] %}
+                <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+            {% else %}
+                <video width="320" height="240" controls>
+                    <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="video/{{ filename.split('.')[-1] }}">
+                    Your browser does not support the video tag.
+                </video>
+            {% endif %}
         {% endif %}
 
         <button onclick="startLiveFeed()">Start Live Feed</button>
