@@ -20,3 +20,7 @@ def generate_caption(image_base64):
     }
     response = requests.post(url, json=data)
     return response.json().get("response", "No description generated.") if response.status_code == 200 else "Error in LLaVA response."
+
+
+
+
