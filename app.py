@@ -19,7 +19,7 @@ image_caption = ""
 
 @app.route('/')
 def index():
-    return render_template('test.html', filename="")
+    return render_template('index.html', filename="")
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
