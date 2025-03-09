@@ -3,235 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Recognition Chatbot</title>
+    <title>Image RecoG</title>
     <style>
-        body {
-            background-color: rgb(175, 232, 255);
-            color: #000000;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #343541; }
+        .sidebar { width: 260px; background-color: #202123; padding: 0.5rem; display: flex; flex-direction: column; color: white; }
+        .new-chat-btn { padding: 12px; margin: 8px; background-color: #343541; border: 1px solid #565869; border-radius: 5px; color: white; cursor: pointer; display: flex; gap: 8px; }
+        .history { flex: 1; margin-top: 1rem; }
+        .sidebar-bottom { border-top: 1px solid #4D4D4F; padding-top: 1rem; margin-top: auto; }
+        .main-chat { flex: 1; display: flex; flex-direction: column; position: relative; padding: 20px; }
+        .messages { 
+            flex: 1; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px;
+            align-items: flex-start; /* Chat starts from the left */
         }
-
-        h1, h2 {
-            color: #000000;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 90%;
-            max-width: 1200px;
-        }
-
-        .left-section {
-            flex: 1;
-            min-width: 300px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .right-section {
-            flex: 1.5;
-            min-width: 400px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .upload-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            margin-top: 200px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        input[type="file"], input[type="text"], button {
-            background: transparent;
-            color: black;
-            border: 2px solid black;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            width: 100%;
-            max-width: 600px;
-            display: block;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        button {
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            background: black;
+        .message { 
+            max-width: 600px; 
+            padding: 10px 15px; 
+            border-radius: 8px; 
             color: white;
+            display: flex;
+            flex-direction: column;
         }
-
-        .upload-button, .cancel-button {
-            width: auto;
-            padding: 12px 20px;
-            font-size: 16px;
-            border: 2px solid black;
-            background: transparent;
-            color: black;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .upload-button:hover, .cancel-button:hover {
-            background: black;
-            color: white;
-        }
-
-        #chatbox {
-            height: 400px;
-            width: 90%;
-            max-width: 600px;
-            overflow-y: auto;
-            text-align: left;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            border: 1px solid black;
-            margin: 10px 0;
-        }
-
-        .message {
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            max-width: 80%;
-        }
-
-        .user-message {
-            background: black;
-            color: white;
-            align-self: flex-end;
-            text-align: right;
-        }
-
-        .bot-message {
-            background: #ccc;
-            color: black;
+        .user-message { 
+            background-color: #0A84FF;
             align-self: flex-start;
-            text-align: left;
+        }
+        .ai-message { 
+            background-color: #3E3F4B;
+            align-self: flex-start;
         }
 
-        img {
-            margin-top: 15px;
+        /* Increase Image Size */
+        .message img { 
+            max-width: 350px; /* Slightly increased for better visibility */
+            border-radius: 5px; 
+        }
+
+        .input-container { width: 100%; padding: 24px 0; position: relative; }
+        .input-wrapper { 
+            max-width: 800px; 
+            margin: 0 auto; /* Centering the chat input box */
+            padding: 0 24px; 
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        .chat-input {
+            flex: 1;
+            padding: 14px 16px;
+            background-color: #40414F;
+            border: none;
             border-radius: 5px;
-            max-width: 100%;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
+            color: white;
+            font-size: 1rem;
+            resize: none;
+            max-height: 200px;
+            overflow: hidden;
         }
-
-        .hidden {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .left-section, .right-section {
-                width: 100%;
-                text-align: center;
-                align-items: center;
-            }
-
-            #chatbox {
-                height: 300px;
-                max-width: 100%;
-            }
-        }
+        .send-btn, .voice-btn, .upload-btn { height: 40px; width: 40px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .send-btn img, .voice-btn img, .upload-btn img { width: 24px; height: 24px; }
+        .file-input { display: none; }
+        .icons { filter: invert(1); color: white; }
     </style>
-    <script>
-        function sendMessage() {
-    var userMessage = document.getElementById("userMessage").value;
-    var chatbox = document.getElementById("chatbox");
-
-    if (userMessage.trim() === "") return; // Prevent empty messages
-
-    chatbox.innerHTML += `<div class="message user-message"><b>You:</b> ${userMessage}</div>`;
-
-    fetch("/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage })
-    })
-    .then(response => response.json())
-    .then(data => {
-        chatbox.innerHTML += `<div class="message bot-message"><b>Bot:</b> ${data.response}</div>`;
-        document.getElementById("userMessage").value = "";
-        chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to latest message
-    })
-    .catch(error => console.error("Error:", error));
-}
-
-        function cancelUpload() {
-            document.getElementById("fileInput").value = ""; // Clears the selected file
-            var uploadedImage = document.getElementById("uploadedImage");
-            if (uploadedImage) {
-                uploadedImage.classList.add("hidden"); // Hides the uploaded image
-            }
-        }
-
-        function clearFileInput() {
-            setTimeout(() => {
-                document.getElementById("fileInput").value = ""; // Clears file after submission
-            }, 1000); // Small delay to allow the form submission
-        }
-    </script>
 </head>
 <body>
-    <h1>Image Recognition Chatbot</h1>
-
-    <div class="container">
-        <div class="left-section">
-            <div class="upload-container">
-                <form action="/" method="post" enctype="multipart/form-data" onsubmit="clearFileInput()">
-                    <input type="file" id="fileInput" name="file">
-                    <div class="button-group">
-                        <input type="submit" value="Upload" class="upload-button">
-                        <button type="button" class="cancel-button" onclick="cancelUpload()">Cancel</button>
-                    </div>
-                </form>
-            </div>
-            {% if filename %}
-                <h2>Uploaded Image:</h2>
-                <img id="uploadedImage" src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
-            {% endif %}
-        </div>
-
-        <div class="right-section">
-            <h2>Chat with the Bot</h2>
-            <div id="chatbox"></div>
-            <input type="text" id="userMessage" placeholder="Ask something about the image or live feed">
-            <button onclick="sendMessage()" class="send-button">Send</button>
+    <div class="sidebar">
+        <button class="new-chat-btn"> <span>+</span> New Chat </button>
+        <div class="history"></div>
+        <div class="sidebar-bottom">
+            <button class="new-chat-btn"> <span>⚙</span> Settings </button>
         </div>
     </div>
+
+    <div class="main-chat">
+        <div class="messages" id="chatbox"></div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <label for="file-upload" class="upload-btn">
+                    <img src="static/assets/images/upload.png" alt="Upload" class="icons">
+                </label>
+                <input type="file" class="file-input" id="file-upload" accept="image/*">
+
+                <textarea class="chat-input" id="userMessage" placeholder="Send a message..." rows="1"></textarea>
+
+                <button class="voice-btn" onclick="startVoiceRecognition()">
+                    <img src="static/assets/images/microphone.png" alt="Voice" class="icons">
+                </button>
+                
+                <button class="send-btn" onclick="sendMessage()">
+                    <img src="static/assets/images/message.png" alt="Send" class="icons">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+    const chatInput = document.getElementById("userMessage");
+    const chatbox = document.getElementById("chatbox");
+    const fileInput = document.getElementById("file-upload");
+
+    function addMessage(sender, text, imageUrl = null) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message");
+
+        if (sender === "You") {
+            messageDiv.classList.add("user-message");
+        } else {
+            messageDiv.classList.add("ai-message");
+        }
+
+        if (imageUrl) {
+            messageDiv.innerHTML = `<strong>${sender}:</strong> <br> <img src="${imageUrl}" alt="Uploaded Image">`;
+        } else {
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        }
+
+        chatbox.appendChild(messageDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function sendMessage() {
+        var userMessage = chatInput.value.trim();
+        if (userMessage === "") return;
+
+        addMessage("You", userMessage);
+
+        fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: userMessage })
+        })
+        .then(response => response.json())
+        .then(data => {
+            addMessage("AI", data.response);
+            chatInput.value = "";
+        })
+        .catch(error => console.error("Error:", error));
+    }
+
+    function startVoiceRecognition() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = "en-US";
+        recognition.start();
+        recognition.onresult = function (event) {
+            chatInput.value = event.results[0][0].transcript;
+        };
+    }
+
+    fileInput.addEventListener("change", function () {
+        const file = fileInput.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/upload", { method: "POST", body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.filename) {
+                    const imageUrl = "/uploads/" + data.filename;
+                    addMessage("You", "", imageUrl);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    });
+
+    document.querySelector(".send-btn").addEventListener("click", sendMessage);
+
+    // ✅ Send message on pressing Enter key
+    chatInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault(); // Prevents new line
+            sendMessage();
+        }
+    });
+});
+    </script>
 </body>
 </html>
-
-

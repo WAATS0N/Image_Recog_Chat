@@ -6,7 +6,10 @@ def chat_with_bot(user_message, image_caption="", history=[]):
     """Send user input, optional image caption, and conversation history to LLaVA for a response"""
     url = "http://localhost:11434/api/generate"
     history_prompt = " ".join([f"User: {msg['user']}\nBot: {msg['bot']}" for msg in history])
-    full_prompt = f"{history_prompt}\nUser: {user_message}\nBased on this image description: '{image_caption}', answer this question:"
+    if image_caption == "":
+        full_prompt=f"Answer general questions" 
+    else:
+        full_prompt = f"{history_prompt}\nUser: {user_message}\nBased on this image description: '{image_caption}', answer this question:"
 
     data = {
         "model": OLLAMA_MODEL,

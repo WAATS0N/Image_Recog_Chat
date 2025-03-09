@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, Response
+from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, send_from_directory
 import os
 import cv2
 from werkzeug.utils import secure_filename
@@ -17,30 +17,39 @@ def allowed_file(filename):
 # Global variable to store image caption
 image_caption = ""
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
+    return render_template('test.html', filename="")
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    """Handles file uploads"""
     global image_caption
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            return redirect(request.url)
-        
-        file = request.files['file']
-        
-        if file.filename == '':
-            return redirect(request.url)
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
+    file = request.files['file']
 
-            # Process image with LLaVA
-            image_base64 = preprocess_image(file_path)
-            image_caption = generate_caption(image_base64)
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
 
-            return render_template('index.html', filename=filename)
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
 
-    return render_template('index.html')
+        # Process image with LLaVA
+        image_base64 = preprocess_image(file_path)
+        image_caption = generate_caption(image_base64)
+
+        return jsonify({"message": "File uploaded successfully", "filename": filename})
+
+    return jsonify({"error": "Invalid file type"}), 400
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    """Serve uploaded images"""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -72,4 +81,3 @@ if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)
-
