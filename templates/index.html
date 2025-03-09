@@ -168,23 +168,26 @@
     </style>
     <script>
         function sendMessage() {
-            var userMessage = document.getElementById("userMessage").value;
-            var chatbox = document.getElementById("chatbox");
+    var userMessage = document.getElementById("userMessage").value;
+    var chatbox = document.getElementById("chatbox");
 
-            chatbox.innerHTML += <div class="message user-message"><b>You:</b> ${userMessage}</div>;
+    if (userMessage.trim() === "") return; // Prevent empty messages
 
-            fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userMessage })
-            })
-            .then(response => response.json())
-            .then(data => {
-                chatbox.innerHTML += <div class="message bot-message"><b>Bot:</b> ${data.response}</div>;
-                document.getElementById("userMessage").value = "";
-                chatbox.scrollTop = chatbox.scrollHeight;
-            });
-        }
+    chatbox.innerHTML += `<div class="message user-message"><b>You:</b> ${userMessage}</div>`;
+
+    fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage })
+    })
+    .then(response => response.json())
+    .then(data => {
+        chatbox.innerHTML += `<div class="message bot-message"><b>Bot:</b> ${data.response}</div>`;
+        document.getElementById("userMessage").value = "";
+        chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to latest message
+    })
+    .catch(error => console.error("Error:", error));
+}
 
         function cancelUpload() {
             document.getElementById("fileInput").value = ""; // Clears the selected file
