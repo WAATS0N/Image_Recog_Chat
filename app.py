@@ -1,9 +1,14 @@
+#app.py
+
 from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 import os
 import cv2
+import base64
+import numpy as np
 from werkzeug.utils import secure_filename
 from image_caption import preprocess_image, generate_caption
 from chatbot import chat_with_bot
+from hand_gesture import HandGestureRecognizer
 
 app = Flask(__name__)
 
@@ -19,8 +24,10 @@ def allowed_file(filename):
     """Check if the file is of an allowed image type."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Global variable to store image caption
+# Global variables
 image_caption = ""
+gesture_recognizer = HandGestureRecognizer()
+video_capture = None  # Will be initialized when needed
 
 @app.route('/')
 def index():
@@ -70,9 +77,12 @@ def chat():
 # Video Streaming Setup
 def generate_frames():
     """Captures live video frames and streams them."""
-    cap = cv2.VideoCapture(0)
+    global video_capture
+    if video_capture is None:
+        video_capture = cv2.VideoCapture(0)
+    
     while True:
-        success, frame = cap.read()
+        success, frame = video_capture.read()
         if not success:
             break
         else:
@@ -80,12 +90,54 @@ def generate_frames():
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-    cap.release()
 
 @app.route('/video_feed')
 def video_feed():
     """Returns the video feed."""
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/process_gesture', methods=['POST'])
+def process_gesture():
+    """Process a frame for hand gesture recognition."""
+    global video_capture
+    
+    if video_capture is None:
+        video_capture = cv2.VideoCapture(0)
+    
+    # Capture a frame
+    ret, frame = video_capture.read()
+    if not ret:
+        return jsonify({"error": "Could not capture video frame"}), 500
+    
+    # Process the frame for hand gestures
+    try:
+        result = gesture_recognizer.process_frame(frame)
+        
+        # Generate text interpretation of gestures
+        gesture_text = ""
+        if result["gestures"]:
+            for gesture in result["gestures"]:
+                if gesture in gesture_recognizer.gestures:
+                    gesture_text += f"{gesture_recognizer.gestures[gesture]} "
+                else:
+                    gesture_text += f"{gesture} "
+        
+        return jsonify({
+            "gestures": result["gestures"],
+            "gesture_text": gesture_text.strip(),
+            "frame": f"data:image/jpeg;base64,{result['annotated_frame']}"
+        })
+    except Exception as e:
+        return jsonify({"error": f"Error processing gesture: {str(e)}"}), 500
+
+@app.route('/stop_video', methods=['POST'])
+def stop_video():
+    """Stops the video capture when not needed."""
+    global video_capture
+    if video_capture is not None:
+        video_capture.release()
+        video_capture = None
+    return jsonify({"status": "stopped"})
 
 if __name__ == '__main__':
     app.run(debug=True)

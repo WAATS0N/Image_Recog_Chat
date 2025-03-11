@@ -10,7 +10,7 @@ def chat_with_bot(user_message, image_caption="", history=[]):
         full_prompt=f"Answer general questions" 
     else:
         full_prompt = f"{history_prompt}\nUser: {user_message}\nBased on this image description: '{image_caption}', answer this question:"
-
+        
     data = {
         "model": OLLAMA_MODEL,
         "prompt": full_prompt,
