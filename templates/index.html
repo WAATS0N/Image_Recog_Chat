@@ -445,7 +445,7 @@
     <div class="sidebar">
         <div class="app-branding">
             <div class="app-logo"><i class="fas fa-robot"></i></div>
-            <div class="app-name">Vision Chat</div>
+            <div class="app-name">IRC</div>
         </div>
         
         <button class="new-chat-btn" id="newChatBtn">
@@ -466,9 +466,6 @@
                 <button class="action-btn" title="Clear Chat">
                     <i class="fas fa-broom"></i>
                 </button>
-                <button class="action-btn" title="Settings">
-                    <i class="fas fa-cog"></i>
-                </button>
             </div>
         </div>
         
@@ -476,10 +473,10 @@
 
         <div class="input-container">
             <div class="input-wrapper">
-                <button class="input-button" id="emojiButton">
+                <!--button class="input-button" id="emojiButton">
                     <i class="far fa-smile"></i>
                     <span class="input-button-tooltip">Emoji</span>
-                </button>
+                </button-->
                 
                 <textarea class="chat-input" id="userMessage" placeholder="Type a message..." rows="1"></textarea>
 
@@ -586,6 +583,7 @@
                 // Save to localStorage
                 localStorage.setItem('chatSessions', JSON.stringify(chatSessions));
                 
+
                 // Update sidebar
                 updateChatHistory();
             }
