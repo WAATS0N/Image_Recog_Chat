@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 import os
 import cv2
 from werkzeug.utils import secure_filename
@@ -7,11 +7,16 @@ from chatbot import chat_with_bot
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'static/uploads/'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# File Upload Configuration
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 def allowed_file(filename):
+    """Check if the file is of an allowed image type."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Global variable to store image caption
@@ -23,8 +28,9 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    """Handles file uploads"""
+    """Handles image uploads, processes the image, and generates a caption."""
     global image_caption
+
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
 
@@ -39,21 +45,23 @@ def upload_file():
         file.save(file_path)
 
         # Process image with LLaVA
-        image_base64 = preprocess_image(file_path)
-        image_caption = generate_caption(image_base64)
-
-        return jsonify({"message": "File uploaded successfully", "filename": filename})
+        try:
+            image_base64 = preprocess_image(file_path)
+            image_caption = generate_caption(image_base64)
+            return jsonify({"message": "File uploaded successfully", "filename": filename, "caption": image_caption})
+        except Exception as e:
+            return jsonify({"error": f"Could not process image. {str(e)}"}), 500
 
     return jsonify({"error": "Invalid file type"}), 400
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    """Serve uploaded images"""
+    """Serves the uploaded image from the static/uploads directory."""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    """Handles chatbot conversation"""
+    """Handles chatbot conversation."""
     global image_caption
     user_message = request.json.get("message", "")
     bot_response = chat_with_bot(user_message, image_caption)
@@ -61,6 +69,7 @@ def chat():
 
 # Video Streaming Setup
 def generate_frames():
+    """Captures live video frames and streams them."""
     cap = cv2.VideoCapture(0)
     while True:
         success, frame = cap.read()
@@ -75,9 +84,8 @@ def generate_frames():
 
 @app.route('/video_feed')
 def video_feed():
+    """Returns the video feed."""
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)

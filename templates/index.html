@@ -3,81 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image RecoG</title>
+    <title>Image Recognition Chatbot</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body { display: flex; height: 100vh; background-color: #343541; }
-        .sidebar { width: 260px; background-color: #202123; padding: 0.5rem; display: flex; flex-direction: column; color: white; }
-        .new-chat-btn { padding: 12px; margin: 8px; background-color: #343541; border: 1px solid #565869; border-radius: 5px; color: white; cursor: pointer; display: flex; gap: 8px; }
-        .history { flex: 1; margin-top: 1rem; }
-        .sidebar-bottom { border-top: 1px solid #4D4D4F; padding-top: 1rem; margin-top: auto; }
-        .main-chat { flex: 1; display: flex; flex-direction: column; position: relative; padding: 20px; }
-        .messages { 
-            flex: 1; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 16px;
-            align-items: flex-start; /* Chat starts from the left */
-        }
-        .message { 
-            max-width: 600px; 
-            padding: 10px 15px; 
-            border-radius: 8px; 
-            color: white;
-            display: flex;
-            flex-direction: column;
-        }
-        .user-message { 
-            background-color: #0A84FF;
-            align-self: flex-start;
-        }
-        .ai-message { 
-            background-color: #3E3F4B;
-            align-self: flex-start;
-        }
-
-        /* Increase Image Size */
-        .message img { 
-            max-width: 350px; /* Slightly increased for better visibility */
-            border-radius: 5px; 
-        }
-
+        .sidebar { width: 260px; background-color: #202123; padding: 1rem; color: white; }
+        .main-chat { flex: 1; display: flex; flex-direction: column; padding: 20px; }
+        .messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .message { max-width: 600px; padding: 10px 15px; border-radius: 8px; color: white; }
+        .user-message { background-color: #adc5d3; align-self: flex-start; }
+        .ai-message { background-color: #a4b2bb; align-self: flex-start; }
         .input-container { width: 100%; padding: 24px 0; position: relative; }
-        .input-wrapper { 
-            max-width: 800px; 
-            margin: 0 auto; /* Centering the chat input box */
-            padding: 0 24px; 
-            position: relative; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-        }
-        .chat-input {
-            flex: 1;
-            padding: 14px 16px;
-            background-color: #40414F;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            font-size: 1rem;
-            resize: none;
-            max-height: 200px;
-            overflow: hidden;
-        }
-        .send-btn, .voice-btn, .upload-btn { height: 40px; width: 40px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .input-wrapper { max-width: 800px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 12px; }
+        .chat-input { flex: 1; padding: 14px 16px; background-color: #40414F; border: none; border-radius: 5px; color: white; font-size: 1rem; resize: none; }
+        .send-btn, .voice-btn, .upload-btn { height: 40px; width: 40px; background: none; border: none; cursor: pointer; }
         .send-btn img, .voice-btn img, .upload-btn img { width: 24px; height: 24px; }
-        .file-input { display: none; }
-        .icons { filter: invert(1); color: white; }
+        .icons { filter: invert(1); }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <button class="new-chat-btn"> <span>+</span> New Chat </button>
-        <div class="history"></div>
-        <div class="sidebar-bottom">
-            <button class="new-chat-btn"> <span>⚙</span> Settings </button>
-        </div>
+        <button class="new-chat-btn">New Chat</button>
     </div>
 
     <div class="main-chat">
@@ -85,17 +32,20 @@
 
         <div class="input-container">
             <div class="input-wrapper">
-                <label for="file-upload" class="upload-btn">
+                <textarea class="chat-input" id="userMessage" placeholder="Speak or type..." rows="1"></textarea>
+
+                <!-- Upload Button -->
+                <button class="upload-btn" id="uploadButton">
                     <img src="static/assets/images/upload.png" alt="Upload" class="icons">
-                </label>
-                <input type="file" class="file-input" id="file-upload" accept="image/*">
+                </button>
+                <input type="file" id="fileInput" accept="image/*" class="hidden">
 
-                <textarea class="chat-input" id="userMessage" placeholder="Send a message..." rows="1"></textarea>
-
-                <button class="voice-btn" onclick="startVoiceRecognition()">
+                <!-- Voice Button -->
+                <button class="voice-btn" id="micButton">
                     <img src="static/assets/images/microphone.png" alt="Voice" class="icons">
                 </button>
-                
+
+                <!-- Send Button -->
                 <button class="send-btn" onclick="sendMessage()">
                     <img src="static/assets/images/message.png" alt="Send" class="icons">
                 </button>
@@ -105,86 +55,139 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-    const chatInput = document.getElementById("userMessage");
-    const chatbox = document.getElementById("chatbox");
-    const fileInput = document.getElementById("file-upload");
+            const chatInput = document.getElementById("userMessage");
+            const chatbox = document.getElementById("chatbox");
+            const micButton = document.getElementById("micButton");
+            const fileInput = document.getElementById("fileInput");
+            const uploadButton = document.getElementById("uploadButton");
 
-    function addMessage(sender, text, imageUrl = null) {
-        const messageDiv = document.createElement("div");
-        messageDiv.classList.add("message");
+            function addMessage(sender, text, isImage = false) {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("message", sender === "You" ? "user-message" : "ai-message");
 
-        if (sender === "You") {
-            messageDiv.classList.add("user-message");
-        } else {
-            messageDiv.classList.add("ai-message");
-        }
-
-        if (imageUrl) {
-            messageDiv.innerHTML = `<strong>${sender}:</strong> <br> <img src="${imageUrl}" alt="Uploaded Image">`;
-        } else {
-            messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
-        }
-
-        chatbox.appendChild(messageDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
-
-    function sendMessage() {
-        var userMessage = chatInput.value.trim();
-        if (userMessage === "") return;
-
-        addMessage("You", userMessage);
-
-        fetch("/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: userMessage })
-        })
-        .then(response => response.json())
-        .then(data => {
-            addMessage("AI", data.response);
-            chatInput.value = "";
-        })
-        .catch(error => console.error("Error:", error));
-    }
-
-    function startVoiceRecognition() {
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = "en-US";
-        recognition.start();
-        recognition.onresult = function (event) {
-            chatInput.value = event.results[0][0].transcript;
-        };
-    }
-
-    fileInput.addEventListener("change", function () {
-        const file = fileInput.files[0];
-        if (file) {
-            const formData = new FormData();
-            formData.append("file", file);
-
-            fetch("/upload", { method: "POST", body: formData })
-            .then(response => response.json())
-            .then(data => {
-                if (data.filename) {
-                    const imageUrl = "/uploads/" + data.filename;
-                    addMessage("You", "", imageUrl);
+                if (isImage) {
+                    messageDiv.innerHTML = `<strong>${sender}:</strong> <br><img src="${text}" width="200">`;
+                } else {
+                    messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
                 }
-            })
-            .catch(error => console.error("Error:", error));
-        }
-    });
 
-    document.querySelector(".send-btn").addEventListener("click", sendMessage);
+                chatbox.appendChild(messageDiv);
+                chatbox.scrollTop = chatbox.scrollHeight;
+            }
 
-    // ✅ Send message on pressing Enter key
-    chatInput.addEventListener("keydown", function (event) {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault(); // Prevents new line
-            sendMessage();
+            function sendMessage() {
+                var userMessage = chatInput.value.trim();
+                if (userMessage === "") return;
+
+                addMessage("You", userMessage);
+
+                fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userMessage })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    addMessage("AI", data.response);
+                    chatInput.value = "";
+                })
+                .catch(error => console.error("Error:", error));
+            }
+
+            function startVoiceRecognition() {
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    alert("Your browser does not support speech recognition. Use Google Chrome.");
+                    return;
+                }
+
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = "en-US";
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = function () {
+                    console.log("Listening...");
+                    micButton.style.backgroundColor = "#ff4d4d"; // Indicate recording
+                };
+
+                recognition.onresult = function (event) {
+                    const transcript = event.results[0][0].transcript;
+                    chatInput.value = transcript; // Set text input field
+                };
+
+                recognition.onerror = function (event) {
+                    console.error("Speech recognition error:", event.error);
+                    alert("Could not recognize speech. Try again.");
+                };
+
+                recognition.onend = function () {
+                    console.log("Stopped listening.");
+                    micButton.style.backgroundColor = ""; // Reset button color
+                };
+
+                recognition.start();
+            }
+
+            function uploadImage(file) {
+                const formData = new FormData();
+                formData.append("file", file); // Correct key should be "file"
+
+                fetch("/upload", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.filename) {
+                        const imageUrl = `/uploads/${data.filename}`;
+                        addMessage("You", imageUrl, true); // Display uploaded image
+                        addMessage("AI", data.caption); // Show AI-generated caption
+                    } else {
+                        alert("Error: Could not process image.");
+                    }
+                })
+                .catch(error => console.error("Error uploading image:", error));
+            }
+
+            uploadButton.addEventListener("click", () => fileInput.click());
+
+            fileInput.addEventListener("change", function () {
+                if (this.files.length > 0) {
+                    uploadImage(this.files[0]);
+                }
+            });
+            function uploadImage(file) {
+    const formData = new FormData();
+    formData.append("file", file); // Correct key should be "file"
+
+    fetch("/upload", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.filename) {
+            const imageUrl = `/uploads/${data.filename}`;
+            addMessage("You", imageUrl, true); // Display uploaded image
+            addMessage("AI", data.caption); // Show AI-generated caption
+        } else {
+            alert("Error: Could not process image.");
         }
-    });
-});
+    })
+    .catch(error => console.error("Error uploading image:", error));
+}
+
+
+            micButton.addEventListener("click", startVoiceRecognition);
+            document.querySelector(".send-btn").addEventListener("click", sendMessage);
+
+            chatInput.addEventListener("keydown", function (event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+        });
     </script>
 </body>
 </html>
