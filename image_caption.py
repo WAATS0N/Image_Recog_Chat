@@ -24,3 +24,6 @@ def generate_caption(image_base64):
 
 
 
+
+
+

@@ -1,10 +1,6 @@
-#app.py
-
 from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 import os
 import cv2
-import base64
-import numpy as np
 from werkzeug.utils import secure_filename
 from image_caption import preprocess_image, generate_caption
 from chatbot import chat_with_bot

@@ -37,6 +37,21 @@
             --radius-lg: 16px;
         }
         
+        /* Light Theme Colors */
+        .light-theme {
+    --bg-main: #f0f0f5;
+    --bg-sidebar: #ffffff;
+    --bg-message: #e0e0eb;
+    --bg-input: #ffffff;
+    --color-primary: #ff6f61;
+    --color-secondary: #4d80e4;
+    --color-accent: #7b68ee;
+    --color-text: #333333;
+    --color-text-muted: #777777;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
         body { 
             display: flex; 
             height: 100vh; 
@@ -80,9 +95,15 @@
         .app-branding {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .app-logo-container {
+            display: flex;
+            align-items: center;
         }
         
         .app-logo {
@@ -95,6 +116,27 @@
             font-weight: 600;
             font-size: 1.2rem;
             letter-spacing: 0.5px;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--color-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            background-color: var(--color-accent);
+            transform: rotate(30deg);
         }
         
         .new-chat-btn { 
@@ -141,10 +183,10 @@
             border-radius: var(--radius-sm);
             cursor: pointer; 
             display: flex; 
-            align-items: center;
+            flex-direction: column;
             background-color: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.03);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.8rem;
             box-shadow: var(--shadow-sm);
         }
         
@@ -152,6 +194,12 @@
             background-color: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.08);
             transform: translateX(3px);
+        }
+        
+        .history-item-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
         }
         
         .history-icon {
@@ -166,6 +214,14 @@
             overflow: hidden; 
             text-overflow: ellipsis;
             font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .history-timestamp {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            margin-top: 0.3rem;
+            margin-left: 1.7rem;
         }
         
         .delete-chat { 
@@ -205,7 +261,7 @@
             flex-direction: column; 
             padding: 1.5rem 2rem;
             position: relative;
-            background: linear-gradient(135deg, var(--bg-main) 0%, #1a1a2e 100%);
+            background: linear-gradient(135deg, var(--bg-main) 0%, var(--bg-main) 100%);
         }
         
         .chat-header {
@@ -268,6 +324,9 @@
             color: var(--color-text);
             box-shadow: var(--shadow-md);
             line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
         
         .message strong {
@@ -302,6 +361,14 @@
             text-align: right;
             color: rgba(255, 255, 255, 0.6);
             margin-top: 0.5rem;
+            padding-top: 0.3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Specific styling for timestamps in light theme */
+        .light-theme .chat-time {
+            color: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         .input-container { 
@@ -357,6 +424,8 @@
             transition: all 0.3s ease;
         }
         
+       
+        
         .input-button:hover {
             background-color: var(--color-accent);
             color: white;
@@ -408,8 +477,16 @@
         }
         
         .message {
-            animation: fadeIn 0.3s ease forwards;
-        }
+    max-width: 85%; 
+    padding: 1rem 1.2rem; 
+    border-radius: var(--radius-md); 
+    color: var(--color-text);
+    box-shadow: var(--shadow-md);
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Add space between message content elements */
+}
         
         .typing-indicator {
             display: flex;
@@ -556,13 +633,43 @@
 .hidden {
     display: none !important;
 }
+.continuous-text-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.accumulated-text {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+#currentGesture {
+    background-color: var(--color-accent);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+}
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="app-branding">
-            <div class="app-logo"><i class="fas fa-robot"></i></div>
-            <div class="app-name">IRC</div>
+            <div class="app-logo-container">
+                <div class="app-logo"><i class="fas fa-robot"></i></div>
+                <div class="app-name">IRC</div>
+            </div>
+            <button id="themeToggle" class="theme-toggle" title="Toggle Light/Dark Theme">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
         
         <button class="new-chat-btn" id="newChatBtn">
@@ -579,21 +686,14 @@
                 <i class="fas fa-comments"></i>
                 <span>Current Conversation</span>
             </div>
-            <div class="chat-actions">
-                <button class="action-btn" title="Clear Chat">
-                    <i class="fas fa-broom"></i>
-                </button>
-            </div>
+            
         </div>
         
         <div class="messages" id="chatbox"></div>
 
         <div class="input-container">
             <div class="input-wrapper">
-                <!--button class="input-button" id="emojiButton">
-                    <i class="far fa-smile"></i>
-                    <span class="input-button-tooltip">Emoji</span>
-                </button-->
+           
                 
                 <textarea class="chat-input" id="userMessage" placeholder="Type a message..." rows="1"></textarea>
 
@@ -643,6 +743,39 @@
                 </div>
                 <div id="detectedGesture" class="detected-gesture">
                     <span>No gesture detected</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="continuousModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sign Language Recognition</h2>
+                <span class="close-button" id="continuousCloseButton">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="video-container">
+                    <img id="continuousVideoFeed" src="" alt="Video feed">
+                </div>
+                <div id="currentGesture" class="detected-gesture">
+                    <span>No gesture detected</span>
+                </div>
+                <div class="continuous-text-container">
+                    <h3>Translated Text:</h3>
+                    <div id="accumulatedText" class="accumulated-text">
+                        <p>Sign language will appear here...</p>
+                    </div>
+                </div>
+                <div class="gesture-controls">
+                    <button id="startContinuousBtn" class="action-button">
+                        <i class="fas fa-play"></i> Start Translation
+                    </button>
+                    <button id="stopContinuousBtn" class="action-button disabled">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                  <button id="sendContinuousBtn" class="action-button disabled">
+                        <i class="fas fa-paper-plane"></i> Send to Chat
+                    </button>
                 </div>
             </div>
         </div>
@@ -789,6 +922,35 @@ window.addEventListener("click", function(event) {
             const sendButton = document.getElementById("sendButton");
             const newChatBtn = document.getElementById("newChatBtn");
             const chatHistory = document.getElementById("chatHistory");
+            const themeToggle = document.getElementById("themeToggle");
+            
+            // Theme toggle functionality
+            let isDarkTheme = true; // Default is dark theme
+            
+            function toggleTheme() {
+                isDarkTheme = !isDarkTheme;
+                if (isDarkTheme) {
+                    document.body.classList.remove('light-theme');
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                } else {
+                    document.body.classList.add('light-theme');
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+                
+                // Save theme preference
+                localStorage.setItem('darkTheme', isDarkTheme);
+            }
+            
+            // Load saved theme preference
+            if (localStorage.getItem('darkTheme') !== null) {
+                isDarkTheme = localStorage.getItem('darkTheme') === 'true';
+                if (!isDarkTheme) {
+                    document.body.classList.add('light-theme');
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+            }
+            
+            themeToggle.addEventListener('click', toggleTheme);
             
             // Chat history management
             let chatSessions = [];
@@ -804,7 +966,7 @@ window.addEventListener("click", function(event) {
                 }
             }
             
-            // Function to create a new chat session
+    
             function createNewChat() {
                 // Save current chat if it has messages
                 if (chatbox.children.length > 0) {
@@ -1152,6 +1314,199 @@ window.addEventListener("click", function(event) {
                 }, 500);
             }
         });
+        // Continuous Sign Language Recognition
+const continuousButton = document.getElementById("gestureButton");  // Reusing gesture button
+const continuousModal = document.getElementById("continuousModal");
+const continuousCloseButton = document.getElementById("continuousCloseButton");
+const continuousVideoFeed = document.getElementById("continuousVideoFeed");
+const currentGesture = document.getElementById("currentGesture");
+const accumulatedText = document.getElementById("accumulatedText");
+const startContinuousBtn = document.getElementById("startContinuousBtn");
+const stopContinuousBtn = document.getElementById("stopContinuousBtn");
+const clearTextBtn = document.getElementById("clearTextBtn");
+const sendContinuousBtn = document.getElementById("sendContinuousBtn");
+
+let isContinuousModalOpen = false;
+let isContinuousActive = false;
+let continuousUpdateInterval = null;
+
+// Function to open continuous sign language modal
+function openContinuousModal() {
+    gestureModal.classList.add("hidden");  // Hide regular gesture modal if open
+    continuousModal.classList.remove("hidden");
+    isContinuousModalOpen = true;
+    
+    // Start polling for video frames
+    updateContinuousVideoFeed();
+}
+
+// Function to close continuous sign language modal
+function closeContinuousModal() {
+    continuousModal.classList.add("hidden");
+    isContinuousModalOpen = false;
+    
+    // Stop continuous recognition if active
+    if (isContinuousActive) {
+        stopContinuousRecognition();
+    }
+    
+    // Clear the interval
+    if (continuousUpdateInterval) {
+        clearInterval(continuousUpdateInterval);
+        continuousUpdateInterval = null;
+    }
+    
+    // Stop the video capture on the server
+    fetch("/stop_video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    });
+    
+    // Reset UI
+    continuousVideoFeed.src = "";
+    currentGesture.innerHTML = "<span>No gesture detected</span>";
+    sendContinuousBtn.classList.add("disabled");
+}
+
+// Function to update the continuous video feed
+function updateContinuousVideoFeed() {
+    if (!isContinuousModalOpen) return;
+    
+    if (isContinuousActive) {
+        // If continuous mode is active, get the continuous recognition data
+        fetch("/get_continuous_recognition")
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+            
+            // Update the video feed
+            continuousVideoFeed.src = data.frame;
+            
+            // Update current gesture text
+            if (data.current_text) {
+                currentGesture.innerHTML = `<span>${data.current_text}</span>`;
+            } else {
+                currentGesture.innerHTML = "<span>No gesture detected</span>";
+            }
+            
+            // Update accumulated text
+            if (data.accumulated_text) {
+                accumulatedText.innerHTML = `<p>${data.accumulated_text}</p>`;
+                sendContinuousBtn.classList.remove("disabled");
+            }
+        })
+        .catch(error => {
+            console.error("Error updating continuous recognition:", error);
+        });
+    } else {
+        // Just update the video feed without recognition
+        fetch("/process_gesture", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+            
+            // Update the video feed
+            continuousVideoFeed.src = data.frame;
+        })
+        .catch(error => {
+            console.error("Error updating video feed:", error);
+        });
+    }
+    
+    // Schedule next update
+    if (!continuousUpdateInterval) {
+        continuousUpdateInterval = setInterval(updateContinuousVideoFeed, 150);
+    }
+}
+
+// Function to start continuous recognition
+function startContinuousRecognition() {
+    fetch("/start_continuous_recognition", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        isContinuousActive = true;
+        startContinuousBtn.classList.add("disabled");
+        stopContinuousBtn.classList.remove("disabled");
+    })
+    .catch(error => {
+        console.error("Error starting continuous recognition:", error);
+    });
+}
+
+// Function to stop continuous recognition
+function stopContinuousRecognition() {
+    fetch("/stop_continuous_recognition", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        isContinuousActive = false;
+        startContinuousBtn.classList.remove("disabled");
+        stopContinuousBtn.classList.add("disabled");
+    })
+    .catch(error => {
+        console.error("Error stopping continuous recognition:", error);
+    });
+}
+
+// Function to clear accumulated text
+function clearAccumulatedText() {
+    fetch("/clear_accumulated_text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        accumulatedText.innerHTML = "<p>Sign language will appear here...</p>";
+        sendContinuousBtn.classList.add("disabled");
+    })
+    .catch(error => {
+        console.error("Error clearing accumulated text:", error);
+    });
+}
+
+// Function to send accumulated text to chat
+function sendAccumulatedTextToChat() {
+    const text = accumulatedText.textContent.trim();
+    if (!text || text === "Sign language will appear here...") return;
+    
+    // Add to chat input
+    chatInput.value = text;
+    
+    // Close the modal
+    closeContinuousModal();
+    
+    // Send the message
+    sendMessage();
+}
+
+// Update the gesture button to open continuous modal instead
+gestureButton.addEventListener("click", openContinuousModal);
+continuousCloseButton.addEventListener("click", closeContinuousModal);
+startContinuousBtn.addEventListener("click", startContinuousRecognition);
+stopContinuousBtn.addEventListener("click", stopContinuousRecognition);
+clearTextBtn.addEventListener("click", clearAccumulatedText);
+sendContinuousBtn.addEventListener("click", sendAccumulatedTextToChat);
+
+// Close the modal if clicking outside of it
+window.addEventListener("click", function(event) {
+    if (event.target === continuousModal) {
+        closeContinuousModal();
+    }
+});
     </script>
 </body>
 </html>
